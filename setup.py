@@ -67,7 +67,7 @@ def initialize_database(wallet_address):
         print("🔹 Database already exists.")
 
 if __name__ == "__main__":
-    test_wallet = "ban_1xyz..."  # Replace with real wallet address
+    test_wallet = "ban_1yog3tpzw3668xtj8jaxmk3k71ug7cf5c795sg5ximwnunppzpfq51ic9hx7"  # Replace with real wallet address
     print("🚀 Initializing Dust5D Node with MFA-Locked Encryption...")
     generate_key(test_wallet)
     initialize_database(test_wallet)
