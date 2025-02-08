@@ -10,7 +10,6 @@ SCHEMA_PATHS = [
     "schema/access_control_schema.sql"
 ]
 
-# Generate encryption key if not exists
 def generate_key():
     if not os.path.exists(KEY_PATH):
         key = Fernet.generate_key()
@@ -19,6 +18,10 @@ def generate_key():
         print("✅ Encryption key generated.")
     else:
         print("🔹 Encryption key already exists.")
+
+def load_key():
+    with open(KEY_PATH, "rb") as key_file:
+        return Fernet(key_file.read())
 
 def initialize_database():
     if not os.path.exists(DB_PATH):
@@ -37,8 +40,18 @@ def initialize_database():
     else:
         print("🔹 Database already exists.")
 
+def encrypt_data(data):
+    """Encrypts data using the generated encryption key."""
+    f = load_key()
+    return f.encrypt(data.encode())
+
+def decrypt_data(encrypted_data):
+    """Decrypts data using the generated encryption key."""
+    f = load_key()
+    return f.decrypt(encrypted_data).decode()
+
 if __name__ == "__main__":
-    print("🚀 Initializing Dust5D Node...")
+    print("🚀 Initializing Dust5D Node with Encryption...")
     generate_key()
     initialize_database()
-    print("✅ Dust5D Node setup complete.")
+    print("✅ Dust5D Node setup complete with encryption.")
