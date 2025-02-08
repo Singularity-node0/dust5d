@@ -41,7 +41,7 @@ def check_banano_transaction(wallet_address, dataset_id):
     return False, "No valid MFA transaction found."
 
 if __name__ == "__main__":
-    test_wallet = "ban_1xyz..."  # Replace with a real wallet address
+    test_wallet = "ban_19rzir87uw13tc6pt7kc97pipr8jtxopbiwtgzmoycm1kope66aar59h95sc"  # Replace with a real wallet address
     test_dataset_id = "123"
     success, message = check_banano_transaction(test_wallet, test_dataset_id)
     print(f"MFA Verification Result: {message}")
