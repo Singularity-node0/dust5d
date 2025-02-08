@@ -28,8 +28,16 @@ def execute_query(wallet_address, query, decrypt_result=True):
     except Exception as e:
         return f"❌ Query Error: {str(e)}"
 
-if __name__ == "__main__":
-    test_wallet = "ban_1yog3tpzw3668xtj8jaxmk3k71ug7cf5c795sg5ximwnunppzpfq51ic9hx7"  # Replace with real wallet address
-    test_query = "SELECT encrypted_data FROM datasets WHERE name = 'test_dataset';"
-    result = execute_query(test_wallet, test_query)
-    print(result)
+def insert_encrypted_data(wallet_address, dataset_name, raw_data):
+    """
+    Encrypts and inserts or updates data into the database.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    encrypted_value = encrypt_data(raw_data, wallet_address)
+    cursor.execute("INSERT OR REPLACE INTO datasets (name, encrypted_data, data_hash) VALUES (?, ?, ?)", 
+                   (dataset_name, encrypted_value, "dummy_hash"))
+    conn.commit()
+    conn.close()
+    print(f"✅ Data inserted/updated successfully for dataset: {dataset_name}")
