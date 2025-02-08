@@ -66,20 +66,8 @@ def initialize_database(wallet_address):
     else:
         print("🔹 Database already exists.")
 
-def encrypt_data(data, wallet_address):
-    """Encrypts data using the MFA-protected encryption key."""
-    key = load_key(wallet_address)
-    f = Fernet(key)
-    return f.encrypt(data.encode())
-
-def decrypt_data(encrypted_data, wallet_address):
-    """Decrypts data using the MFA-protected encryption key."""
-    key = load_key(wallet_address)
-    f = Fernet(key)
-    return f.decrypt(encrypted_data).decode()
-
 if __name__ == "__main__":
-    test_wallet = "ban_1yog3tpzw3668xtj8jaxmk3k71ug7cf5c795sg5ximwnunppzpfq51ic9hx7"  # Replace with real wallet address
+    test_wallet = "ban_1xyz..."  # Replace with real wallet address
     print("🚀 Initializing Dust5D Node with MFA-Locked Encryption...")
     generate_key(test_wallet)
     initialize_database(test_wallet)
