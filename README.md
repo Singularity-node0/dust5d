@@ -39,7 +39,7 @@ python setup.py
 ```sh
 python insert_encrypted_data.py
 ```
-✅ This will encrypt your data and store it **securely** in the database.
+✅ This will encrypt your data and store it **securely** in the database. 
 
 ### **Query & Decrypt Data (MFA Required)**
 ```sh
@@ -51,6 +51,16 @@ python query_execution.py
 ---
 
 ## 🔑 How Banano MFA Works
+
+```mermaid
+graph TD;
+    A[User Requests Access] -->|Signs Request with Private Key| B[Check Banano DAG];
+    B -->|Valid Transaction Found?| C{Yes};
+    B -->|No Transaction Found| D[Access Denied ❌];
+    C -->|Derive Encryption Key from MFA Hash| E[Unlock Data Decryption];
+    E -->|Execute Query & Return Data| F[Access Granted ✅];
+```
+
 **Step 1:** The user sends a **Banano transaction** to the verification address.  
 **Step 2:** The system **checks the Banano DAG** for a valid transaction.  
 **Step 3:** If verified, **the encryption key is reconstructed**, and data is accessible.  
@@ -70,4 +80,3 @@ python query_execution.py
 🚀 This is just the beginning. Feel free to **fork, improve, and push the boundaries.** Let’s make decentralized AI-powered intelligence a reality.  
 
 **Created by a one-man army & his bud.** 🛠️🔥
-
