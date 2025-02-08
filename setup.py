@@ -1,0 +1,44 @@
+import sqlite3
+import os
+from cryptography.fernet import Fernet
+
+# Define paths
+DB_PATH = "data/dust5d.sqlite"
+KEY_PATH = "keys/encryption.key"
+SCHEMA_PATHS = [
+    "schema/dataset_schema.sql",
+    "schema/access_control_schema.sql"
+]
+
+# Generate encryption key if not exists
+def generate_key():
+    if not os.path.exists(KEY_PATH):
+        key = Fernet.generate_key()
+        with open(KEY_PATH, "wb") as key_file:
+            key_file.write(key)
+        print("✅ Encryption key generated.")
+    else:
+        print("🔹 Encryption key already exists.")
+
+def initialize_database():
+    if not os.path.exists(DB_PATH):
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Load schema files
+        for schema in SCHEMA_PATHS:
+            with open(schema, "r") as f:
+                cursor.executescript(f.read())
+                print(f"✅ Schema {schema} applied.")
+
+        conn.commit()
+        conn.close()
+        print("✅ Database initialized.")
+    else:
+        print("🔹 Database already exists.")
+
+if __name__ == "__main__":
+    print("🚀 Initializing Dust5D Node...")
+    generate_key()
+    initialize_database()
+    print("✅ Dust5D Node setup complete.")
