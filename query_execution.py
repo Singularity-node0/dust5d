@@ -1,6 +1,6 @@
 import sqlite3
 from banano_mfa import check_banano_transaction
-from setup import encrypt_data, decrypt_data
+from encryption_utils import encrypt_data, decrypt_data
 
 DB_PATH = "data/dust5d.sqlite"
 
@@ -21,7 +21,7 @@ def execute_query(wallet_address, query, decrypt_result=True):
         conn.close()
         
         if decrypt_result:
-            decrypted_result = [(decrypt_data(row[0]),) if isinstance(row[0], bytes) else row for row in result]
+            decrypted_result = [(decrypt_data(row[0], wallet_address),) if isinstance(row[0], bytes) else row for row in result]
             return f"✅ Query Successful: {decrypted_result}"
         
         return f"✅ Query Successful: {result}"
