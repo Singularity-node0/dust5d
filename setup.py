@@ -79,7 +79,7 @@ def decrypt_data(encrypted_data, wallet_address):
     return f.decrypt(encrypted_data).decode()
 
 if __name__ == "__main__":
-    test_wallet = "ban_1xyz..."  # Replace with real wallet address
+    test_wallet = "ban_1yog3tpzw3668xtj8jaxmk3k71ug7cf5c795sg5ximwnunppzpfq51ic9hx7"  # Replace with real wallet address
     print("🚀 Initializing Dust5D Node with MFA-Locked Encryption...")
     generate_key(test_wallet)
     initialize_database(test_wallet)

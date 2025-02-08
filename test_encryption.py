@@ -1,29 +1,95 @@
 import sqlite3
-from setup import encrypt_data, decrypt_data
-from contextlib import closing
+import os
+import hashlib
+import base64
+from cryptography.fernet import Fernet
+from banano_mfa import check_banano_transaction
 
+# Define paths
 DB_PATH = "data/dust5d.sqlite"
+KEY_PATH = "keys/encryption.key.enc"
+SCHEMA_PATHS = [
+    "schema/dataset_schema.sql",
+    "schema/access_control_schema.sql"
+]
 
-def test_encryption():
-    with closing(sqlite3.connect(DB_PATH)) as conn:
-        with conn:
-            cursor = conn.cursor()
-            
-            # Insert encrypted test data
-            test_value = "Hello, Dust5D!"
-            encrypted_value = encrypt_data(test_value)
-            cursor.execute("INSERT INTO datasets (name, encrypted_data, data_hash) VALUES (?, ?, ?)", 
-                           ("test_dataset", encrypted_value, "dummy_hash"))
-            print("✅ Encrypted test data inserted.")
-            
-            # Retrieve and decrypt test data
-            cursor.execute("SELECT encrypted_data FROM datasets WHERE name = ?", ("test_dataset",))
-            row = cursor.fetchone()
-            if row:
-                decrypted_value = decrypt_data(row[0])
-                print(f"✅ Decryption successful: {decrypted_value}")
-            else:
-                print("❌ Failed to retrieve test data.")
+def generate_wallet_hash(wallet_address):
+    """
+    Generate a Base64-encoded SHA-256 hash based on the wallet address.
+    This will be used as part of the encryption key reconstruction.
+    """
+    hash_bytes = hashlib.sha256(wallet_address.encode()).digest()
+    return base64.urlsafe_b64encode(hash_bytes[:32])  # Ensure proper length
+
+def generate_key(wallet_address):
+    """
+    Generate and encrypt the encryption key using the wallet hash.
+    """
+    if not os.path.exists(KEY_PATH):
+        raw_key = Fernet.generate_key()
+        wallet_hash = generate_wallet_hash(wallet_address)
+        encrypted_key = Fernet(wallet_hash).encrypt(raw_key)
+        
+        with open(KEY_PATH, "wb") as key_file:
+            key_file.write(encrypted_key)
+        print("✅ Encryption key generated and locked to wallet.")
+    else:
+        print("🔹 Encryption key already exists.")
+
+def load_key(wallet_address):
+    """
+    Validate MFA and retrieve the decrypted encryption key.
+    """
+    success, message = check_banano_transaction(wallet_address)
+    if not success:
+        raise PermissionError("❌ Access Denied: MFA verification failed.")
+    
+    with open(KEY_PATH, "rb") as key_file:
+        encrypted_key = key_file.read()
+    wallet_hash = generate_wallet_hash(wallet_address)
+    return Fernet(wallet_hash).decrypt(encrypted_key)
+
+def initialize_database(wallet_address):
+    if not os.path.exists(DB_PATH):
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Load schema files
+        for schema in SCHEMA_PATHS:
+            with open(schema, "r") as f:
+                cursor.executescript(f.read())
+                print(f"✅ Schema {schema} applied.")
+
+        conn.commit()
+        conn.close()
+        print("✅ Database initialized.")
+    else:
+        print("🔹 Database already exists.")
+
+def encrypt_data(data, wallet_address):
+    """Encrypts data using the MFA-protected encryption key."""
+    key = load_key(wallet_address)
+    f = Fernet(key)
+    return f.encrypt(data.encode())
+
+def decrypt_data(encrypted_data, wallet_address):
+    """Decrypts data using the MFA-protected encryption key."""
+    key = load_key(wallet_address)
+    f = Fernet(key)
+    return f.decrypt(encrypted_data).decode()
 
 if __name__ == "__main__":
-    test_encryption()
+    test_wallet = "ban_1yog3tpzw3668xtj8jaxmk3k71ug7cf5c795sg5ximwnunppzpfq51ic9hx7"  # Replace with real wallet address
+    print("🚀 Initializing Dust5D Node with MFA-Locked Encryption...")
+    generate_key(test_wallet)
+    initialize_database(test_wallet)
+    
+    # Test encryption and decryption
+    test_value = "Hello, Dust5D!"
+    encrypted_value = encrypt_data(test_value, test_wallet)
+    print(f"✅ Encrypted Value: {encrypted_value}")
+    
+    decrypted_value = decrypt_data(encrypted_value, test_wallet)
+    print(f"✅ Decrypted Value: {decrypted_value}")
+    
+    print("✅ Dust5D Node setup complete with MFA-protected encryption key.")
