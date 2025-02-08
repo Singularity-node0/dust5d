@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import hashlib
+import base64
 from cryptography.fernet import Fernet
 from banano_mfa import check_banano_transaction
 
@@ -14,10 +15,11 @@ SCHEMA_PATHS = [
 
 def generate_wallet_hash(wallet_address):
     """
-    Generate a SHA-256 hash based on the wallet address.
+    Generate a Base64-encoded SHA-256 hash based on the wallet address.
     This will be used as part of the encryption key reconstruction.
     """
-    return hashlib.sha256(wallet_address.encode()).digest()
+    hash_bytes = hashlib.sha256(wallet_address.encode()).digest()
+    return base64.urlsafe_b64encode(hash_bytes[:32])  # Ensure proper length
 
 def generate_key(wallet_address):
     """
